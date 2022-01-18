@@ -1,0 +1,10 @@
+
+15:58
+first string in diary
+Second string in diary
+*------------*------------*
+
+16:00
+Try again write to file
+Lorem ipsum dolor
+*------------*------------*
