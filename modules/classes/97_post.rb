@@ -1,3 +1,5 @@
+require 'pathname'
+
 class Post
   def self.post_types
     [Memo, Link, Task]
@@ -31,9 +33,11 @@ class Post
   end
 
   def file_path
-    current_path = File.dirname(__FILE__)
+    current_path = Pathname.new(__FILE__)
+    current_path = current_path.realpath.parent.parent.to_s
+
     file_name = @created_at.strftime("#{self.class.name}_%Y-%m-%d_%H-%M-%S.txt")
 
-    current_path + "/modules/output/" + file_name
+    current_path + "/output/" + file_name
   end
 end

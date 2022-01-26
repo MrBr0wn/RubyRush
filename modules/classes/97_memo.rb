@@ -10,6 +10,7 @@ class Memo < Post
       @text << line
     end
 
+    @text.pop
   end
 
   def to_lines
