@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<expenses>
+  <expense date = "01.01.2022" category="groceries" amount="650">
+
+  </expense>
+  <expense date = "11.01.2022" category="electronics" amount="2500">
+  </expense>
+  <expense date = "22.01.2022" category="services" amount="3000">
+  </expense>
+
+  <expense date = "03.02.2022" category="groceries" amount="1650">
+  </expense>
+  <expense date = "05.02.2022" category="electronics" amount="500">
+  </expense>
+  <expense date = "10.02.2022" category="services" amount="5000">
+  </expense>
+</expenses>
