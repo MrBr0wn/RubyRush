@@ -21,8 +21,11 @@ class Post
 
   # Finding the record in db by id
   def self.find_by_id(id)
-    db = SQLite3::Database.open(@@SQLITE_DB_FILE)
-
+    begin
+      db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+    rescue SQLite3::SQLException => e
+      abort "Database error. Check the db file(#{@@SQLITE_DB_FILE})\n#{e.message}"
+    end
     # Finding record by id
     if id.nil?
       abort 'Search Error!'
@@ -31,7 +34,11 @@ class Post
       db.results_as_hash = true
 
       # Query to db notepad_db, posts table
-      result = db.execute('SELECT * FROM posts WHERE rowid = ?', id)
+      begin
+        result = db.execute('SELECT * FROM posts WHERE rowid = ?', id)
+      rescue SQLite3::SQLException => e
+        abort "Database error. Check the db file(#{@@SQLITE_DB_FILE})\n#{e.message}"
+      end
 
       # db.execute should returning an array
       result = result[0] if result.is_a?(Array)
@@ -54,7 +61,11 @@ class Post
 
   # Finding the record in db with pararms from terminal
   def self.find_all(limit, type, _id)
-    db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+    begin
+      db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+    rescue SQLite3::SQLException => e
+      puts "Database error. Check the db file(#{@@SQLITE_DB_FILE})\n#{e.message}"
+    end
 
     # Returning all table of records
     db.results_as_hash = false
@@ -64,7 +75,11 @@ class Post
     query += 'LIMIT :limit' unless limit.nil?
 
     # Preparing query
-    statement = db.prepare(query)
+    begin
+      statement = db.prepare(query)
+    rescue SQLite3::SQLException => e
+      abort "Database error. Check the db file(#{@@SQLITE_DB_FILE})\n#{e.message}"
+    end
 
     statement.bind_param('type', type) unless type.nil?
     statement.bind_param('limit', limit) unless limit.nil?

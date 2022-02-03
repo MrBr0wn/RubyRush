@@ -36,7 +36,6 @@ end.parse!
 
 # Result of searching = 1 record finding by ID
 # Result of searching = Several records by params
-p options
 result = if options[:id] && options.size < 2
            Post.find_by_id(options[:id])
          else
