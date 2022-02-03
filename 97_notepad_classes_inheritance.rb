@@ -1,12 +1,14 @@
-require_relative "modules/classes/97_post.rb"
-require_relative "modules/classes/97_memo.rb"
-require_relative "modules/classes/97_task.rb"
-require_relative "modules/classes/97_link.rb"
+# frozen_string_literal: true
 
-puts "Hi! I'm your Notepad"
-puts "What would you like to write?"
+require_relative 'modules/classes/97_post'
+require_relative 'modules/classes/97_memo'
+require_relative 'modules/classes/97_task'
+require_relative 'modules/classes/97_link'
 
-choices = Post.post_types
+puts "Hi! I'm your Notepad on SQLite3"
+puts 'What would you like to write?'
+
+choices = Post.post_types.keys
 
 choice = -1
 
@@ -15,12 +17,12 @@ until choice >= 0 && choice < choices.size
     puts "\t#{index}. #{type}"
   end
 
-  choice = STDIN.gets.chomp.to_i
+  choice = $stdin.gets.chomp.to_i
 end
 
-entry = Post.create(choice)
+entry = Post.create(choices[choice])
 
 entry.read_from_console
-entry.save
+result_id = entry.save_to_db
 
-puts "Note was saved"
+puts "Note was saved. Record ID: #{result_id}"

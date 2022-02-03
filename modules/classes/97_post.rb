@@ -1,12 +1,74 @@
+# frozen_string_literal: true
+
+require 'sqlite3'
 require 'pathname'
 
+# Parent class for different records
 class Post
+  current_path = Pathname.new(__FILE__)
+  file_db = current_path.realpath.parent.parent.to_s
+  @@SQLITE_DB_FILE = "#{file_db}/data/db/notepad_db.db"
+
+  # List of types Posts
   def self.post_types
-    [Memo, Link, Task]
+    { 'Memo' => Memo, 'Task' => Task, 'Link' => Link }
   end
 
-  def self.create(type_index)
-    post_types[type_index].new
+  # Create an appropriate subclass (Memo, Task or Link)
+  def self.create(type)
+    post_types[type].new
+  end
+
+  # Finding the record in db with pararms from terminal
+  def self.find(_limit, _type, id)
+    db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+
+    # Finding record on id
+    if !id.nil?
+      # Set result as hash
+      db.results_as_hash = true
+
+      # Query to db notepad_db, posts table
+      result = db.execute('SELECT * FROM posts WHERE rowid = ?', id)
+
+      # db.execute should returning an array
+      result = result[0] if result.is_a?(Array)
+
+      db.close
+
+      if result.empty?
+        puts "Record with ID = #{id} not found"
+        nil
+      else
+        # Calling static class method without specifying class name,
+        # because it calling from another static class method same class
+        # post = Post.create() eq post = create()
+        post = create(result['type'])
+        post.load_data(result)
+        post
+      end
+    # Finding on another params
+    else
+      # Returning all table of records
+      db.results_as_hash = false
+      query = 'SELECT rowid, * FROM posts '
+      query += 'WHERE type = :type ' unless _type.nil?
+      query += 'ORDER BY rowid DESC '
+      query += 'LIMIT :limit' unless _limit.nil?
+
+      # Preparing query
+      statement = db.prepare(query)
+
+      statement.bind_param('type', _type) unless _type.nil?
+      statement.bind_param('limit', _limit) unless _limit.nil?
+
+      result = statement.execute!
+
+      statement.close
+      db.close
+
+      result
+    end
   end
 
   def initialize
@@ -23,21 +85,53 @@ class Post
   end
 
   def save
-    file =  File.new(file_path, "w")
+    file = File.new(file_path, 'w')
 
-    for line in to_lines do
+    to_lines.each do |line|
       file.puts(line)
     end
 
     file.close
   end
 
+  # Build path to the file
   def file_path
     current_path = Pathname.new(__FILE__)
     current_path = current_path.realpath.parent.parent.to_s
 
     file_name = @created_at.strftime("#{self.class.name}_%Y-%m-%d_%H-%M-%S.txt")
 
-    current_path + "/output/" + file_name
+    "#{current_path}/output/#{file_name}"
+  end
+
+  # Save record to db
+  def save_to_db
+    db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+    # Set result as hash
+    db.results_as_hash = true
+
+    # Query to db notepad_db, posts table
+    db.execute(
+      "INSERT INTO posts (#{to_db_hash.keys.join(',')}) VALUES (#{('?,' * to_db_hash.keys.size).chomp(',')})",
+      to_db_hash.values
+    )
+
+    inser_row_id = db.last_insert_row_id
+
+    db.close
+    inser_row_id
+  end
+
+  # Convert data to hash for including to query db
+  def to_db_hash
+    {
+      'type' => self.class.name,
+      'created_at' => @created_at.to_s
+    }
+  end
+
+  # Preparing data for printing in the terminal
+  def load_data(data_hash)
+    @created_at = Time.parse(data_hash['created_at'])
   end
 end
