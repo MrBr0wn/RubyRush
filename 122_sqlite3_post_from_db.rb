@@ -34,8 +34,14 @@ OptionParser.new do |opt|
   # метод parse, чтобы он заполнил наш хэш options в соответствии с правилами.
 end.parse!
 
-result = Post.find(options[:limit], options[:type], options[:id])
-
+# Result of searching = 1 record finding by ID
+# Result of searching = Several records by params
+p options
+result = if options[:id] && options.size < 2
+           Post.find_by_id(options[:id])
+         else
+           Post.find_all(options[:limit], options[:type], options[:id])
+         end
 # Printing record on same params
 if result.is_a?(Post)
   puts "Record #{result.class.name}, ID: #{options[:id]}"

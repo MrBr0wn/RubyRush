@@ -19,12 +19,14 @@ class Post
     post_types[type].new
   end
 
-  # Finding the record in db with pararms from terminal
-  def self.find(_limit, _type, id)
+  # Finding the record in db by id
+  def self.find_by_id(id)
     db = SQLite3::Database.open(@@SQLITE_DB_FILE)
 
-    # Finding record on id
-    if !id.nil?
+    # Finding record by id
+    if id.nil?
+      abort 'Search Error!'
+    else
       # Set result as hash
       db.results_as_hash = true
 
@@ -36,8 +38,8 @@ class Post
 
       db.close
 
-      if result.empty?
-        puts "Record with ID = #{id} not found"
+      if result.nil? || result.empty?
+        abort "Record with ID = #{id} not found"
         nil
       else
         # Calling static class method without specifying class name,
@@ -47,28 +49,32 @@ class Post
         post.load_data(result)
         post
       end
-    # Finding on another params
-    else
-      # Returning all table of records
-      db.results_as_hash = false
-      query = 'SELECT rowid, * FROM posts '
-      query += 'WHERE type = :type ' unless _type.nil?
-      query += 'ORDER BY rowid DESC '
-      query += 'LIMIT :limit' unless _limit.nil?
-
-      # Preparing query
-      statement = db.prepare(query)
-
-      statement.bind_param('type', _type) unless _type.nil?
-      statement.bind_param('limit', _limit) unless _limit.nil?
-
-      result = statement.execute!
-
-      statement.close
-      db.close
-
-      result
     end
+  end
+
+  # Finding the record in db with pararms from terminal
+  def self.find_all(limit, type, _id)
+    db = SQLite3::Database.open(@@SQLITE_DB_FILE)
+
+    # Returning all table of records
+    db.results_as_hash = false
+    query = 'SELECT rowid, * FROM posts '
+    query += 'WHERE type = :type ' unless type.nil?
+    query += 'ORDER BY rowid DESC '
+    query += 'LIMIT :limit' unless limit.nil?
+
+    # Preparing query
+    statement = db.prepare(query)
+
+    statement.bind_param('type', type) unless type.nil?
+    statement.bind_param('limit', limit) unless limit.nil?
+
+    result = statement.execute!
+
+    statement.close
+    db.close
+
+    result
   end
 
   def initialize

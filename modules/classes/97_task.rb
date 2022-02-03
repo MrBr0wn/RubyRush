@@ -38,6 +38,6 @@ class Task < Post
   # Preparing data for printing in the terminal
   def load_data(data_hash)
     super(data_hash)
-    @deadline = Data.parse(data_hash['deadline'])
+    @deadline = Date.parse(data_hash['deadline'])
   end
 end
