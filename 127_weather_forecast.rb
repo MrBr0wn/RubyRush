@@ -18,13 +18,12 @@ def print_forecast(params)
   puts "Cloudy: #{params['clouds']}"
 end
 
-def forecast(doc, tomorrow = false)
+def forecast(doc, tomorrow: false)
   params = {}
   params['city_name'] = URI.decode_www_form(doc.root.elements['REPORT/TOWN'].attributes['sname'])[0][0]
 
   current_forecast = if tomorrow
                        doc.root.elements['REPORT/TOWN'].elements.to_a.last
-
                      else
                        doc.root.elements['REPORT/TOWN'].elements.to_a[0]
                      end
@@ -49,7 +48,7 @@ def get_forecast(uri)
   params = forecast(doc)
   print_forecast(params)
 
-  params = forecast(doc, true)
+  params = forecast(doc, tomorrow: true)
   print_forecast(params)
 end
 
