@@ -1,5 +1,4 @@
 class Game
-
   def initialize(word)
     @letters = split_on_letters(word)
 
@@ -8,78 +7,52 @@ class Game
     @correct_letters = []
     @incorrect_letters = []
 
-    @status = 0
+    @status = :in_progress
   end
 
   # Query next letter from terminal
   def ask_next_letter
     puts "\nInput next letter"
 
-    letter = ""
+    letter = ''
 
-    while letter == "" do
-      letter = STDIN.gets.chomp
-    end
+    letter = STDIN.gets.chomp while letter == ''
 
     next_step(letter)
   end
 
   # -1/1 is end's of game value
   def next_step(letter)
-    if @status == -1 || @status == 1
-      return
-    end
+    return if @status == -1 || @status == 1
 
-    if @correct_letters.include?(letter) || @incorrect_letters.include?(letter)
-      return
-    end
+    return if @correct_letters.include?(letter) || @incorrect_letters.include?(letter)
 
     if @letters.include?(letter)
       @correct_letters << letter
 
-      if @correct_letters.size == @letters.uniq.size
-        @status = 1
-      end
+      @status = 1 if @correct_letters.size == @letters.uniq.size
     else
       @incorrect_letters << letter
       @errors += 1
 
-      if @errors >= 7
-        @status = -1
-      end
+      @status = -1 if @errors >= 7
 
     end
-
   end
 
   # Splitting word on letters
   def split_on_letters(word)
-    if word == nil || word == ""
-      abort "Word not found!"
-    end
+    abort 'Word not found!' if [nil, ''].include?(word)
 
-    return word.split("")
+    word.split('')
   end
 
   # Getters for access to the instances
-  def letters
-    return @letters
-  end
+  attr_reader :letters
 
-  def correct_letters
-    @correct_letters
-  end
+  attr_reader :correct_letters, :incorrect_letters, :status, :errors
 
-  def incorrect_letters
-    @incorrect_letters
+  def in_progress?
+    @status == :in_progress
   end
-
-  def status
-    @status
-  end
-
-  def errors
-    @errors
-  end
-
 end
